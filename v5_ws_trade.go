@@ -61,6 +61,8 @@ func (s *V5WebsocketTradeService) judgeTopic(respBody []byte) (V5WebsocketTradeT
 			return "", errors.New("auth failed: " + parsedData["ret_msg"].(string))
 		}
 	}
+	// Log unhandled message types for debugging purposes
+	s.client.debugf("Unhandled TradeWebSocket message: %s", string(respBody))
 	return "", nil
 }
 
