@@ -1,6 +1,8 @@
 package bybit
 
 import (
+	"net/http"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -68,15 +70,21 @@ func (s *V5WebsocketService) Private() (V5WebsocketPrivateServiceI, error) {
 func (s *V5WebsocketService) Trade() (V5WebsocketTradeServiceI, error) {
 	url := s.client.baseURL + V5WebsocketTradePath
 	var c *websocket.Conn
+	var r *http.Response
 	var err error
 	if s.client.dialer != nil {
-		c, _, err = s.client.dialer.Dial(url, nil)
+		c, r, err = s.client.dialer.Dial(url, nil)
 	} else {
-		c, _, err = websocket.DefaultDialer.Dial(url, nil)
+		c, r, err = websocket.DefaultDialer.Dial(url, nil)
 	}
 	if err != nil {
 		return nil, err
 	}
+
+	if s.client.debug {
+		s.client.debugf("WebSocket Trade connection established: %+v\n", r.Header)
+	}
+
 	return &V5WebsocketTradeService{
 		client:     s.client,
 		connection: c,
