@@ -23,12 +23,19 @@ func (s *V5WebsocketService) Public(category CategoryV5) (V5WebsocketPublicServi
 	url := s.client.baseURL + V5WebsocketPublicPathFor(category)
 	var c *websocket.Conn
 	var err error
+	var response *http.Response
 	if s.client.dialer != nil {
-		c, _, err = s.client.dialer.Dial(url, nil)
+		c, response, err = s.client.dialer.Dial(url, nil)
 	} else {
-		c, _, err = websocket.DefaultDialer.Dial(url, nil)
+		c, response, err = websocket.DefaultDialer.Dial(url, nil)
 	}
 	if err != nil {
+		if response != nil {
+			// Handle non-200 status codes
+			if s.client.debug {
+				s.client.debugf("WebSocket Public connection failed: %+v\n", response.Header)
+			}
+		}
 		return nil, err
 	}
 	return &V5WebsocketPublicService{
