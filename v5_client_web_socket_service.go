@@ -1,6 +1,7 @@
 package bybit
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -34,6 +35,13 @@ func (s *V5WebsocketService) Public(category CategoryV5) (V5WebsocketPublicServi
 			// Handle non-200 status codes
 			if s.client.debug {
 				s.client.debugf("WebSocket Public connection failed: %+v\n", response.Header)
+				if response.Body != nil {
+					bodyBytes, _ := io.ReadAll(response.Body)
+					response.Body.Close()
+					if len(bodyBytes) > 0 {
+						s.client.debugf("Response Body: %s\n", string(bodyBytes))
+					}
+				}
 			}
 		}
 		return nil, err
